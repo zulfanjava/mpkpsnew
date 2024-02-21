@@ -83,11 +83,19 @@ class _SignUpPageState extends State<SignUpPage> {
                   minWidth: double.infinity,
                   height: 60,
                   onPressed: () async {
-                    var url = Uri.parse('http://localhost:3000/events/signup');
+                  try {
+                    var url = Uri.parse('http://192.168.20.55:3000/events/signup');
                     var response = await http.post(url, body: {'userID': myControllerUserID.text, 'password': myControllerPassword.text});
                     print('Response status: ${response.statusCode}');
                     print('Response body: ${response.body}');
-                  },
+                    if (response.statusCode != 200) {
+                      print('Error: ${response.body}');
+                    }
+                  } catch (e) {
+                    print('Caught exception: $e');
+                  }
+                },
+                        
                   color: Color(0xff0095FF),
                   elevation: 0,
                   shape: RoundedRectangleBorder(

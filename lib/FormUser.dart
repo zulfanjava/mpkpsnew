@@ -1,9 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutterapplication/login.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 
 class FormUser extends StatefulWidget {
   @override
   _FormUserState createState() => _FormUserState();
 }
+class UnknownRouteScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Text('Route does not exist'),
+      ),
+    );
+  }
+}
+
 
 class _FormUserState extends State<FormUser> {
   final _formKey = GlobalKey<FormState>();
@@ -21,6 +36,21 @@ class _FormUserState extends State<FormUser> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      routes: {
+    '/formUser': (context) => FormUser(),
+    // other routes...
+    
+      },
+      // ignore: body_might_complete_normally_nullable
+      onGenerateRoute: (settings) {
+  if (settings.name == '/formUser') {
+    return MaterialPageRoute(builder: (context) => FormUser());
+  }
+  // Handle unknown routes
+  return MaterialPageRoute(builder: (context) => UnknownRouteScreen());
+},
+
+      
       home: Scaffold(
         appBar: AppBar(
           title: Text("Form"),
@@ -214,10 +244,36 @@ class _FormUserState extends State<FormUser> {
                 SizedBox(
                   width: double.infinity, 
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if(_formKey.currentState!.validate()) {
-                        //DO something
-                        print("validation success");
+                        // Prepare data
+                        Map<String, String> data = {
+                          'name': nameController.text,
+                          'jawatan': jawatanController.text,
+                          'bahagian': bahagianController.text,
+                          'urusan': urusanController.text,
+                          'tarikhBertolak': tarikhBertolakController.text,
+                          'masaBertolak': masaBertolakController.text,
+                          'jenisKenderaanBertolak': jenisKenderaanBertolakController.text,
+                          'tarikhBalik': tarikhBalikController.text,
+                          'masaBalik': masaBalikController.text,
+                          'jenisKenderaanBalik': jenisKenderaanBalikController.text,
+                        };
+
+                        // Send data to API
+                        var response = await http.post(
+                          Uri.parse('http://192.168.20.55:3000/events/formUser'), 
+                          headers: <String, String>{
+                            'Content-Type': 'application/json; charset=UTF-8',
+                          },
+                          body: jsonEncode(data),
+                        ); 
+
+                        if (response.statusCode == 200) {
+                          print('Record created successfully');
+                        } else {
+                          print('Failed to create record');
+                        }
                       } else {
                         print("validation failed");
                       }
@@ -229,7 +285,9 @@ class _FormUserState extends State<FormUser> {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
+      )
+      );
+      }
+      
+    }
+
